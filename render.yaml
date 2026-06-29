@@ -1,0 +1,46 @@
+services:
+  # Web App (Main Next.js)
+  - type: web
+    name: goalmind-ai-app
+    runtime: node
+    buildCommand: npm install && npx drizzle-kit push && npm run build
+    startCommand: npm run start
+    plan: free
+    healthCheckPath: /api/health
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: ODDS_API_KEY
+        sync: false
+      - key: API_SPORTS_KEY
+        sync: false
+      - key: ML_SERVICE_URL
+        sync: false
+      - key: CRON_SECRET
+        generateValue: true
+      - key: NODE_VERSION
+        value: "20"
+
+  # KEEP-ALIVE CRON: Pings every 14 minutes to prevent Render Free sleep
+  - type: cron
+    name: goalmind-keep-alive
+    runtime: docker
+    schedule: "*/14 * * * *"
+    dockerfilePath: ./cron/keep-alive.Dockerfile
+    plan: free
+
+  # DATA REFRESH CRON: Updates matches every hour
+  - type: cron
+    name: goalmind-data-refresh
+    runtime: docker
+    schedule: "0 * * * *"
+    dockerfilePath: ./cron/refresh.Dockerfile
+    plan: free
+
+  # AI LEARNING CRON: Auto-learns from yesterday's results every night at 3am UTC
+  - type: cron
+    name: goalmind-ai-learning
+    runtime: docker
+    schedule: "0 3 * * *"
+    dockerfilePath: ./cron/learn.Dockerfile
+    plan: free

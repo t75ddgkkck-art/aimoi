@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: goalmind-ml-service
+    env: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: MODEL_DIR
+        value: /data/models
+    disk:
+      name: ml-model-storage
+      mountPath: /data
+      sizeGB: 1
